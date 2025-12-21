@@ -1,98 +1,80 @@
-const STYLE_ID = "yt-shorts-blocker-style";
+const api = window.browser || window.chrome;
 
-/* ---------- CSS BLOCKING ---------- */
-function addBlockStyle() {
-  if (document.getElementById(STYLE_ID)) return;
-
-  const style = document.createElement("style");
-  style.id = STYLE_ID;
-  style.textContent = `
-    /* Shorts shelves */
-    ytd-rich-shelf-renderer[is-shorts],
-    ytd-reel-shelf-renderer {
-      display: none !important;
-    }
-
-    /* Shorts links (cards, videos, etc.) */
-    a[href^="/shorts"] {
-      display: none !important;
-    }
-  `;
-  document.head.appendChild(style);
+function getState(cb) {
+  api.storage.sync.get({ enabled: true, focusUntil: null }, cb);
 }
 
-function removeBlockStyle() {
-  const style = document.getElementById(STYLE_ID);
-  if (style) style.remove();
+function isSearchPage() {
+  return location.pathname === "/results";
 }
 
-/* ---------- SIDEBAR HANDLING ---------- */
-function removeSidebarShorts() {
-  // Handle collapsed sidebar (mini guide)
-  document.querySelectorAll("ytd-guide-entry-renderer").forEach(entry => {
-    const title = entry.querySelector("yt-formatted-string.title");
-    if (title && title.textContent.trim() === "Shorts") {
-      entry.style.display = "none";
-      entry.setAttribute("data-shorts-blocked", "true");
-    }
-  });
+function shouldBlock(state) {
+  if (!state.enabled) return false;
 
-  // Handle expanded sidebar (mini guide items)
-  document.querySelectorAll("ytd-mini-guide-entry-renderer").forEach(entry => {
-    const title = entry.querySelector("yt-formatted-string");
-    if (title && title.textContent.trim() === "Shorts") {
-      entry.style.display = "none";
-      entry.setAttribute("data-shorts-blocked", "true");
-    }
-  });
+  if (state.focusUntil && Date.now() > state.focusUntil) {
+    api.storage.sync.set({ enabled: false, focusUntil: null });
+    return false;
+  }
+  return !isSearchPage();
+}
 
-  // Handle expanded sidebar (guide section items)
-  document.querySelectorAll("ytd-guide-section-renderer").forEach(section => {
-    section.querySelectorAll("ytd-guide-entry-renderer, ytd-guide-collapsible-entry-renderer").forEach(entry => {
-      const title = entry.querySelector("yt-formatted-string");
-      if (title && title.textContent.trim() === "Shorts") {
-        entry.style.display = "none";
-        entry.setAttribute("data-shorts-blocked", "true");
-      }
+function redirectShorts(state) {
+  if (
+    state.enabled &&
+    !isSearchPage() &&
+    location.pathname.startsWith("/shorts")
+  ) {
+    const id = location.pathname.split("/")[2];
+    if (id) location.replace(`/watch?v=${id}`);
+  }
+}
+
+function removeShorts() {
+  getState((state) => {
+    if (!shouldBlock(state)) return;
+
+    document.querySelectorAll("ytd-rich-section-renderer").forEach(el => {
+      if (el.innerText.toLowerCase().includes("shorts")) el.remove();
+    });
+
+    document.querySelectorAll("a[href^='/shorts']").forEach(a => {
+      const card = a.closest(
+        "ytd-rich-item-renderer, ytd-video-renderer, ytd-grid-video-renderer"
+      );
+      if (card) card.remove();
+    });
+
+    // Handle collapsed sidebar
+    document.querySelectorAll("ytd-guide-entry-renderer").forEach(el => {
+      if (el.innerText.trim().toLowerCase() === "shorts") el.remove();
+    });
+
+    // Handle mini guide (partially expanded view)
+    document.querySelectorAll("ytd-mini-guide-entry-renderer").forEach(el => {
+      if (el.innerText.trim().toLowerCase() === "shorts") el.remove();
+    });
+
+    // Handle expanded sidebar sections
+    document.querySelectorAll("ytd-guide-section-renderer").forEach(section => {
+      section.querySelectorAll("ytd-guide-entry-renderer, ytd-guide-collapsible-entry-renderer").forEach(el => {
+        if (el.innerText.trim().toLowerCase() === "shorts") el.remove();
+      });
+    });
+
+    document.querySelectorAll("tp-yt-paper-tab").forEach(tab => {
+      if (tab.innerText.trim().toLowerCase() === "shorts") tab.remove();
+    });
+
+    document.querySelectorAll("ytd-reel-shelf-renderer").forEach(el => {
+      el.remove();
     });
   });
 }
 
-function restoreSidebarShorts() {
-  // Restore all blocked items
-  document
-    .querySelectorAll('[data-shorts-blocked="true"]')
-    .forEach(entry => {
-      entry.style.display = "";
-      entry.removeAttribute("data-shorts-blocked");
-    });
-}
+getState(redirectShorts);
+removeShorts();
 
-/* ---------- APPLY SETTINGS ---------- */
-function applySetting(enabled) {
-  if (enabled) {
-    addBlockStyle();
-    removeSidebarShorts();
-    observer.observe(document.body, { childList: true, subtree: true });
-  } else {
-    removeBlockStyle();
-    restoreSidebarShorts();
-    observer.disconnect();
-  }
-}
-
-/* ---------- OBSERVER ---------- */
-const observer = new MutationObserver(() => {
-  removeSidebarShorts();
-});
-
-/* ---------- INIT ---------- */
-chrome.storage.sync.get({ blockShorts: true }, data => {
-  applySetting(data.blockShorts);
-});
-
-chrome.storage.onChanged.addListener(changes => {
-  if (changes.blockShorts) {
-    applySetting(changes.blockShorts.newValue);
-  }
+new MutationObserver(removeShorts).observe(document.body, {
+  childList: true,
+  subtree: true
 });
