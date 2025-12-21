@@ -1,17 +1,20 @@
 {
   "manifest_version": 3,
-  "name": "YouTube Shorts Blocker",
-  "version": "1.1",
-  "description": "Toggle YouTube Shorts on and off.",
-  "permissions": ["storage"],
-  "host_permissions": ["https://www.youtube.com/*"],
-  "action": {
-    "default_popup": "popup.html"
-  },
+  "name": "YouTube Focus",
+  "version": "2.0.0",
+  "description": "Hide YouTube Shorts with a focus timer and toggle.",
+  "permissions": ["storage", "notifications"],
+
+  "host_permissions": ["*://www.youtube.com/*"],
   "content_scripts": [
     {
-      "matches": ["https://www.youtube.com/*"],
-      "js": ["content.js"]
+      "matches": ["*://www.youtube.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
     }
-  ]
+  ],
+  "action": {
+    "default_popup": "popup.html"
+  }
+
 }
