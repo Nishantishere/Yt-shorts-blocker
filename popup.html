@@ -1,27 +1,107 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
-  <title>YouTube Shorts Blocker</title>
-
   <style>
+    :root {
+      --glass-bg: rgba(255, 255, 255, 0.05);
+      --glass-border: rgba(255, 255, 255, 0.15);
+      --accent: #818cf8; 
+      --success: #34d399;
+      --text-main: #ffffff;
+      --text-muted: #cbd5e1;
+    }
+
+    *{
+      box-sizing: border-box;
+    }
+
     body {
-      font-family: Arial, sans-serif;
-      width: 160px;
-      padding: 12px;
+      width: 290px;
+      padding: 10px;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      margin: 0;
+      background: radial-gradient(circle at top left, #1e1b4b, #312e81, #0f172a);
+      color: var(--text-main);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 350px;
+    }
+
+    .container {
+      width: 100%;
+      padding: 24px;
+      background: var(--glass-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--glass-border);
+      border-radius: 20px;
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
       text-align: center;
+      height:380px;
+    }
+
+    #logo{
+    position: absolute;
+    top: 40px;   /* distance from top */
+    left: 20px;  /* distance from left */
+    }
+    
+    #logo img{
+      height: 30px;
+      width: 30px;
     }
 
     h3 {
-      margin: 0 0 10px;
-      font-size: 16px;
+      font-size: 17px;
+      font-weight: 700;
+      text-transform: uppercase;
+      top:10px; 
+      right:18px; 
+      color: #ffffff;  
+      text-decoration:none; 
+      margin-left: 20px;
+      
     }
 
+    .github-link {
+      position: absolute;
+      top: 10px;
+      right: 18px;
+      font-size: 12px;
+      font-weight: 400;
+      color: #cbd5e1;
+      text-decoration: none;
+      opacity: 0.7;
+      margin: 10px;
+      transition: opacity 0.2s;
+    }
+    .github-link:hover {
+      opacity: 1;
+    }
+
+    .row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .label-text {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-muted);
+    }
+
+    /* Toggle */
     .switch {
       position: relative;
       display: inline-block;
-      width: 50px;
-      height: 26px;
+      width: 44px;
+      height: 24px;
     }
 
     .switch input {
@@ -33,57 +113,273 @@
     .slider {
       position: absolute;
       cursor: pointer;
-      background-color: #ccc;
-      border-radius: 26px;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      transition: 0.3s;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: rgba(255, 255, 255, 0.1);
+      transition: .4s;
+      border-radius: 34px;
+      border: 1px solid var(--glass-border);
     }
 
     .slider:before {
-      content: "";
       position: absolute;
-      height: 20px;
-      width: 20px;
+      content: "";
+      height: 16px;
+      width: 16px;
       left: 3px;
       bottom: 3px;
       background-color: white;
+      transition: .4s cubic-bezier(0.4,0,0.2,1);
       border-radius: 50%;
-      transition: 0.3s;
     }
 
     input:checked + .slider {
-      background-color: #ff0000;
+      background-color: var(--success);
+      border-color: transparent;
     }
 
     input:checked + .slider:before {
-      transform: translateX(24px);
+      transform: translateX(20px);
     }
+
+    /* Number input */
+
+    /* Number input with custom wrapper */
+
+    .number-input-wrapper {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+    }
+
+
+    input[type="number"] {
+      width: 80px;
+      padding: 6px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--glass-border);
+      border-radius: 8px;
+      color: white;
+      text-align: center;
+      outline: none;
+      font-weight: 600;
+      font-size: 14px;
+      transition: all 0.3s ease;
+      -moz-appearance: textfield;
+      
+    }
+
+    /* Remove ALL default spinner styling */
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      appearance: none;
+      margin: 0;
+      display: none;
+    }
+
+     /* Custom spinner buttons */
+    .spinner-buttons {
+      position: absolute;
+      right: 4px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .spinner-btn {
+      width: 20px;
+      height: 10px;
+      background: rgba(129, 140, 248, 0.2);
+      border: 1px solid rgba(129, 140, 248, 0.3);
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+      user-select: none;
+    }
+    .spinner-btn:hover {
+      background: rgba(129, 140, 248, 0.4);
+      border-color: rgba(129, 140, 248, 0.5);
+      transform: scale(1.05);
+    }
+    .spinner-btn:active {
+      background: rgba(129, 140, 248, 0.6);
+      transform: scale(0.95);
+    }
+    .spinner-btn svg {
+      width: 10px;
+      height: 10px;
+      fill: none;
+      stroke: white;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    /* Slider input */
+    input[type="range"] {
+      width: 100%;
+      -webkit-appearance: none;
+      margin: 12px 0;
+      background: transparent;
+    }
+
+    input[type="range"]::-webkit-slider-runnable-track {
+      height: 6px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 3px;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      height: 18px;
+      width: 18px;
+      border-radius: 50%;
+      background: var(--accent);
+      cursor: pointer;
+      margin-top: -6px;
+      box-shadow: 0 0 10px rgba(129,140,248,0.4);
+    }
+
+    /* Preset chips */
+    .presets {
+      display: flex;
+      justify-content: space-between;
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+
+    .chip {
+      flex: 1;
+      padding: 6px 0;
+      background: rgba(129,140,248,0.2);
+      border-radius: 8px;
+      font-size: 12px;
+      cursor: pointer;
+      border: 1px solid rgba(129,140,248,0.4);
+      transition: 0.2s;
+      text-align: center;
+    }
+
+    .chip:hover {
+      background: rgba(129,140,248,0.4);
+    }
+
+    .chip.active {
+      border-color: var(--accent);
+      background: rgba(129,140,248,0.4);
+    }
+
+    /* Button */
+    button {
+      width: 100%;
+      padding: 12px;
+      background: rgba(129, 140, 248, 0.2);
+      border: 1px solid rgba(129, 140, 248, 0.4);
+      color: white;
+      font-weight: 600;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-top: 10px;
+      backdrop-filter: blur(5px);
+    }
+
+    button:hover {
+      background: rgba(129, 140, 248, 0.4);
+      box-shadow: 0 0 15px rgba(129, 140, 248, 0.3);
+      transform: translateY(-1px);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    .github-link-footer{
+     position: absolute;
+     top: 340px;
+     right: 30px;
+     font-size: 12px;
+     color: #cbd5e1;
+     text-decoration: none;
+     opacity: 0.7;
+     transition: opacity 0.2s;      
+    }  
+    .github-link-footer:hover{
+      opacity: 1;
+    }
+    
   </style>
 </head>
-
 <body>
-  <h3>Block Shorts</h3>
+  <div class="container">
+    <a class="github-link" href="https://github.com/Nishantishere/Yt-shorts-blocker" target="_blank" title="View on GitHub"
+>Give a star &#11088; GitHub &#128072; </a>
+<div id="logo">
 
-  <label class="switch">
-    <input type="checkbox" id="toggle">
-    <span class="slider"></span>
-  </label>
+  <img src="assets/logo.png" alt="logo">
+</div>
+    <h3>YT Shorts Blocker</h3>
 
-  <script>
-    const toggle = document.getElementById("toggle");
+    <!-- Toggle Shorts -->
+    <div class="row">
+      <span class="label-text">Block Shorts</span>
+      <label class="switch">
+        <input type="checkbox" id="toggle">
+        <span class="slider"></span>
+      </label>
+    </div>
+    
+    <!-- Minutes input -->
+    <div class="row">
+        <span class="label-text">Focus (min)</span>
+        <div class="number-input-wrapper">
+        <input type="number" id="minutes" min="1" value="25">
+        <div class="spinner-buttons">
+        <div class="spinner-btn" id="increment">
+        <svg viewBox="0 0 12 12">
+        <polyline points="2 7 6 3 10 7"></polyline>
+        </svg>
+        </div>
+        <div class="spinner-btn" id="decrement">
+        <svg viewBox="0 0 12 12">
+        <polyline points="2 5 6 9 10 5"></polyline>
+        </svg>
+        </div>
+        </div>
+        </div>
+    </div>
+    
+    <!-- Slider -->
+    <div class="row">
+        <input type="range" id="minutes-slider" min="1" max="120" value="25">
+    </div>
+    
+        <!-- Preset Chips -->
+        <div class="presets">
+          <div class="chip" data-mins="10">10</div>
+          <div class="chip" data-mins="20">20</div>
+          <div class="chip" data-mins="30">30</div>
+          <div class="chip" data-mins="60">60</div>
+        </div>
+    <div id="status" style="font-size:13px;color:#cbd5e1;margin-bottom:8px;"></div>
 
-    // Load saved state (default: true)
-    chrome.storage.sync.get({ blockShorts: true }, data => {
-      toggle.checked = data.blockShorts;
-    });
+      <div class="row" id="extendRow" style="display:none;">
+        <button id="extend">+5 min</button>
+      </div>
 
-    // Save toggle state
-    toggle.addEventListener("change", () => {
-      chrome.storage.sync.set({ blockShorts: toggle.checked });
-    });
-  </script>
+      <div style="font-size:12px;color:#94a3b8;margin-top:10px;">
+        Total Focus Today: <span id="stats">0</span> min
+      </div>
+
+    <button id="start">Start Focus Timer</button>
+    
+    <a class="github-link-footer" href="https://github.com/Nishantishere/Yt-shorts-blocker" target="_blank" title="View on GitHub"
+    >Thanks for using please give Feedback! </a>
+        
+</div>
+
+  <script src="popup.js"></script>
 </body>
 </html>
