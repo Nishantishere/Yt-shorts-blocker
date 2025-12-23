@@ -271,7 +271,7 @@
     }
 
     /* Button */
-    button {
+    .start {
       width: 100%;
       padding: 12px;
       background: rgba(129, 140, 248, 0.2);
@@ -293,6 +293,23 @@
 
     button:active {
       transform: translateY(0);
+    }
+
+    /* Reset button styled like small GitHub link but thicker */
+    #reset-storage{
+      background: none;
+      border: none;
+      color: #cbd5e1;
+      font-size: 10px;      /* small font like GitHub link */
+      font-weight: 700;     /* bold font */
+      cursor: pointer;
+      text-decoration: none;
+      margin-top: 20px;
+      padding: 0;
+    }
+
+    .reset-storage:hover {
+      opacity: 0.8;
     }
 
     .github-link-footer{
@@ -359,19 +376,26 @@
           <div class="chip" data-mins="30">30</div>
           <div class="chip" data-mins="60">60</div>
         </div>
-    <div id="status" style="font-size:13px;color:#cbd5e1;margin-bottom:8px;"></div>
+
+        <!-- status -->
+      <div id="status" style="font-size:13px;color:#cbd5e1;margin-bottom:8px;"></div>
 
       <div class="row" id="extendRow" style="display:none;">
-        <button id="extend">+5 min</button>
+        <button id="extend" class="start">+5 min</button>
       </div>
 
       <div style="font-size:12px;color:#94a3b8;margin-top:10px;">
         Total Focus Today: <span id="stats">0</span> min
       </div>
 
-    <button id="start">Start Focus Timer</button>
+      
+      <button id="start" class="start" data-timer>Start Focus Timer</button>
+      <button id="reset-storage">Reset Storage</button>
+
+      
     <div></div>
     <br>
+    
     <a class="github-link-footer" href="https://github.com/Nishantishere/Yt-shorts-blocker" target="_blank" title="View on GitHub"
     >Thanks for using please give Feedback! </a>
         
@@ -380,4 +404,3 @@
   <script src="popup.js"></script>
 </body>
 </html>
-
