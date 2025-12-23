@@ -8,31 +8,24 @@ function isSearchPage() {
   return location.pathname === "/results";
 }
 
-function shouldBlock(state) {
-  if (!state.enabled) return false;
-
-  if (state.focusUntil && Date.now() > state.focusUntil) {
-    api.storage.sync.set({ enabled: false, focusUntil: null });
-    return false;
-  }
-  return !isSearchPage();
-}
-
+// Check if Shorts URL should redirect
 function redirectShorts(state) {
-  if (
-    state.enabled &&
-    !isSearchPage() &&
-    location.pathname.startsWith("/shorts")
-  ) {
+  if (state.enabled && !isSearchPage() && location.pathname.startsWith("/shorts")) {
     const id = location.pathname.split("/")[2];
-    if (id) location.replace(`/watch?v=${id}`);
+    if (id) {
+      // Use replaceState + reload to handle SPA
+      window.history.replaceState({}, "", `/watch?v=${id}`);
+      location.reload(); // forces actual redirect
+    }
   }
 }
 
+// Remove Shorts cards from pages except search page
 function removeShorts() {
   getState((state) => {
-    if (!shouldBlock(state)) return;
+    if (!state.enabled || isSearchPage()) return;
 
+    // Remove shorts sections/cards
     document.querySelectorAll("ytd-rich-section-renderer").forEach(el => {
       if (el.innerText.toLowerCase().includes("shorts")) el.remove();
     });
@@ -44,37 +37,45 @@ function removeShorts() {
       if (card) card.remove();
     });
 
-    // Handle collapsed sidebar
+    document.querySelectorAll("ytd-reel-shelf-renderer").forEach(el => el.remove());
+
+    // Sidebar handling
     document.querySelectorAll("ytd-guide-entry-renderer").forEach(el => {
       if (el.innerText.trim().toLowerCase() === "shorts") el.remove();
     });
-
-    // Handle mini guide (partially expanded view)
     document.querySelectorAll("ytd-mini-guide-entry-renderer").forEach(el => {
       if (el.innerText.trim().toLowerCase() === "shorts") el.remove();
     });
-
-    // Handle expanded sidebar sections
     document.querySelectorAll("ytd-guide-section-renderer").forEach(section => {
       section.querySelectorAll("ytd-guide-entry-renderer, ytd-guide-collapsible-entry-renderer").forEach(el => {
         if (el.innerText.trim().toLowerCase() === "shorts") el.remove();
       });
     });
-
     document.querySelectorAll("tp-yt-paper-tab").forEach(tab => {
       if (tab.innerText.trim().toLowerCase() === "shorts") tab.remove();
-    });
-
-    document.querySelectorAll("ytd-reel-shelf-renderer").forEach(el => {
-      el.remove();
     });
   });
 }
 
-getState(redirectShorts);
-removeShorts();
+// Initial run
+getState((state) => {
+  redirectShorts(state);
+  removeShorts();
+});
 
+// Observe DOM changes dynamically
 new MutationObserver(removeShorts).observe(document.body, {
   childList: true,
   subtree: true
 });
+
+// Detect SPA navigation (YouTube changes URL without reload)
+let lastUrl = location.href;
+new MutationObserver(() => {
+  const currentUrl = location.href;
+  if (currentUrl !== lastUrl) {
+    lastUrl = currentUrl;
+    getState(redirectShorts);
+    removeShorts();
+  }
+}).observe(document.body, { childList: true, subtree: true });
